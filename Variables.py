@@ -2,6 +2,7 @@ from pyprocessing import *
 
 scale_y = 30
 WIDTH,HEIGHT = 900,800
+SCALE=1
 
 COLORS = {"VARIABLE":(155,155,0),
 		  "INTEGER":(255,255,255),
@@ -17,6 +18,7 @@ action=[True,False,False,False]
 class Variable:
 	
 	variable_count = 0
+	variable_block_height=15
 	all_variables = []
 	max_size = 200
 
@@ -25,6 +27,7 @@ class Variable:
 		self.X, self.Y = int(x), int(y)
 		self.x, self.y = int(x), int(y)
 		self.width, self.height = int(width), int(height)
+		Variable.variable_block_height+=self.height+25
 		Variable.all_variables.append(self)
 
 	def move(self,x,y):
@@ -63,7 +66,7 @@ class Variable:
 	def variableblock():
 		noFill()
 		stroke(255)
-		rect(30,5,220,Variable.variable_count*(scale_y+25)+15)
+		rect(30,5,240,Variable.variable_block_height)
 		stroke(0)
 
 		# THIS IS HOW IT ACTUALLY SHOULD
@@ -91,6 +94,7 @@ class Variable:
 	def destroy(self):
 		Variable.all_variables.remove(self)		
 		Variable.variable_count-=1
+		Variable.variable_block_height-=self.height+25
 		del self
 
 class Bool(Variable):
