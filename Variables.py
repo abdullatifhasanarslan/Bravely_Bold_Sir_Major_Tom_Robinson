@@ -18,9 +18,16 @@ action=[True,False,False,False]
 class Variable:
 	
 	variable_count = 0
-	variable_block_height=15
 	all_variables = []
 	max_size = 200
+
+	#I know this is not nice. I will update it when I start to define functions
+	#Because functions will have their own variable blocks. So variable block should be
+	#an independent class
+	variable_block_x=30
+	variable_block_y=5
+	variable_block_width=240
+	variable_block_height=15
 
 	def __init__(self,x=50,y=-1,width=100,height=scale_y,name=""):
 		self.name = str(name)
@@ -66,7 +73,7 @@ class Variable:
 	def variableblock():
 		noFill()
 		stroke(255)
-		rect(30,5,240,Variable.variable_block_height)
+		rect(Variable.variable_block_x,Variable.variable_block_y,Variable.variable_block_width,Variable.variable_block_height)
 		stroke(0)
 
 		# THIS IS HOW IT ACTUALLY SHOULD

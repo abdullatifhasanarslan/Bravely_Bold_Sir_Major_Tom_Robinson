@@ -23,7 +23,7 @@ c+=c
 """
 
 def setup():
-	size(WIDTH,HEIGHT)
+	size(WIDTH,HEIGHT)#resizable=True,fullscreen=True)
 	background(0,0,0)
 
 def draw():
@@ -33,7 +33,9 @@ def draw():
 	background(0,0,0)
 	translate(ORIJIN_X,ORIJIN_Y)
 	scale(SCALE)
-
+	stroke(255)
+	rect(0,0,WIDTH,HEIGHT)
+	stroke(0)
 	#ALL FLOW GOES FROM HERE----------
 	if FLOW:
 		if line[0]:
@@ -47,6 +49,15 @@ def draw():
 		elif line[2]:
 			#c=27.4	float assignment
 			c = Variables.Float(value=27.4,name="c")
+			z = Variables.Integer(value=100,name="z")
+			x = Variables.Integer(value=100,name="x")
+			y = Variables.Integer(value=100,name="y")
+			v = Variables.Integer(value=100,name="v")
+			w = Variables.Integer(value=100,name="w")
+			q = Variables.Integer(value=100,name="q")
+			h = Variables.Integer(value=100,name="h")
+			j = Variables.Integer(value=100,name="j")
+			k = Variables.Integer(value=100,name="k")
 			line[2]=False;line[3]=True
 		elif line[3] :
 			#a+=b 	int+=int
@@ -170,11 +181,29 @@ def draw():
 	elif key.char == "s":
 		SCALE-=0.1
 		key.char = " "
+	"""	
+	#I changed my mind. No scrolling for now.
+	#It requires optimization with screen transformation and new variables
+	
+	elif key.code == UP or key.code == DOWN:
+		e=1
+		if Variables.Variable.variable_block_x<mouse.x and mouse.x<Variables.Variable.variable_block_x+Variables.Variable.variable_block_width: 
+			if Variables.Variable.variable_block_y<mouse.y and mouse.y<Variables.Variable.variable_block_y+Variables.Variable.variable_block_height: 
+				if key.code==UP:
+					if 5<Variables.Variable.variable_block_y:
+						Variables.Variable.variable_block_y-=e*5
+				else:
+					if Variables.Variable.variable_block_y+Variables.Variable.variable_block_height<HEIGHT-5:
+						Variables.Variable.variable_block_y+=e*5
+		key.code = " "
+		key.char = " "
+	"""	
 
 	#FOR DISPLAY--------------------
 	for variable in Variables.Variable.all_variables:
 		variable.display()
 	Variables.Variable.variableblock()
+
 
 
 if __name__ == "__main__":
