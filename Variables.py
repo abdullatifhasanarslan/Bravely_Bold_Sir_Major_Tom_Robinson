@@ -11,7 +11,8 @@ COLORS = {"VARIABLE":(155,155,0),
 		  "FALSE":(255,0,0),
 		  "LIST_BORDER":(200,0,200),
 		  "LIST_ELEMENT":(200,0,200),
-		  "STRING":(255,255,100)}
+		  "CHAR":(255,255,100),
+		  "CHAR_BG":(50,50,50)}
 
 action=[True,False,False,False]
 
@@ -34,7 +35,6 @@ class Variable:
 		self.X, self.Y = int(x), int(y)
 		self.x, self.y = int(x), int(y)
 		self.width, self.height = int(width), int(height)
-		Variable.variable_block_height+=self.height+25
 		Variable.all_variables.append(self)
 
 	def move(self,x,y):
@@ -94,8 +94,9 @@ class Variable:
 		color = COLORS["VARIABLE"]
 		fill(color[0],color[1],color[2])
 		rect(self.x,self.y,100,self.height)
-		textSize(10)
-		text(self.name,self.x+self.width/2,self.y+self.height+15)
+		if self.name!="":
+			textSize(10)
+			text(self.name,self.x+self.width/2,self.y+self.height+15)
 
 
 	def destroy(self):
@@ -117,6 +118,7 @@ class Bool(Variable):
 			self.angle = 0
 		else:
 			self.angle = PI/2
+		Variable.variable_block_height+=self.height+25
 		Variable.variable_count+=1
 
 	def display(self):
@@ -144,8 +146,9 @@ class Bool(Variable):
 		rect(0,0,3,self.height/2)
 		popMatrix()
 		rectMode(CORNER)
-		textSize(10)
-		text(self.name+" = "+str(self.value),self.x+self.width/2,self.y+self.height+15)
+		if self.name!="":
+			textSize(10)
+			text(self.name+" = "+str(self.value),self.x+self.width/2,self.y+self.height+15)
 	
 	#CONTINUE FROM HERE
 	def NOT(self):
@@ -158,6 +161,7 @@ class Integer(Variable):
 			y=Variable.variable_count*(scale_y+25)+10
 		Variable.__init__(self,x,y,value,height,name)
 		self.value = value
+		Variable.variable_block_height+=self.height+25
 		Variable.variable_count+=1
 
 	def display(self):
@@ -174,8 +178,10 @@ class Integer(Variable):
 			stroke(0);strokeWeight(1)
 			#...
 			rect(self.x+Variable.max_size-20,self.y,20,self.height)
-		textSize(10)
-		text(str(self.name+"="+str(self.value)),self.x,self.y+self.height+15)
+		
+		if self.name!="":
+			textSize(10)
+			text(str(self.name+"="+str(self.value)),self.x,self.y+self.height+15)
 
 		fill(0)	#This is necessary because it effects whole program
 
@@ -216,6 +222,7 @@ class Float(Variable):
 		self.value = value
 		self.integer = int(value)
 		self.decimal = value%1
+		Variable.variable_block_height+=self.height+25
 		Variable.variable_count+=1
 
 	def display(self):
@@ -236,8 +243,10 @@ class Float(Variable):
 			rect(self.x+Variable.max_size-20,self.y,20,self.height)
 			#decimal
 			rect(self.x+Variable.max_size,self.y+scale_y,10,-int(self.decimal*scale_y))	#decimal
-		textSize(10)
-		text(str(self.name+"="+str(self.value)),self.x,self.y+self.height+15)
+
+		if self.name!="":
+			textSize(10)
+			text(str(self.name+"="+str(self.value)),self.x,self.y+self.height+15)
 	
 		fill(0)	#This is necessary because it effects whole program
 
@@ -266,96 +275,64 @@ class Float(Variable):
 			action[3]=False;action[0]=True
 		return a
 	"""
-
-class String(Variable):
-
+class Char(Variable):
 	char_size = 30
 
 	def __init__(self,value="",x=50,y=-1,height=scale_y,name=""):
 		if y==-1:
 			y=Variable.variable_count*(scale_y+25)+10
-		Variable.__init__(self,x,y,len(value)*(String.char_size+10)+10,height,name)
+		Variable.__init__(self,x,y,len(value)*(Char.char_size+10)+10,height,name)
 		self.value = value
+		Variable.variable_block_height+=self.height+25
 		Variable.variable_count+=1
 	def display(self):
-		#border
-		color = COLORS["LIST_BORDER"]
-		fill(color[0],color[1],color[2])
-		stroke(color[0],color[1],color[2])
-
-		rect(self.x,self.y,3,scale_y)				#left
-		rect(self.x,self.y+scale_y-3,self.width,3)	#bot
-		rect(self.x+self.width,self.y-3,3,scale_y)	#right
-
 		#parts
 		noStroke()
-
-		current = self.x+13
 		textSize(12)		#SIZE SHOULD BE ABLE TO BE SELECTED
-		for char in self.value:
-			#ELEMENT BORDER
-			color = COLORS["LIST_ELEMENT"]
-			fill(color[0],color[1],color[2])
-			rect(current,self.y,3,scale_y-10)	#left
-			rect(current,self.y+scale_y-13,String.char_size,3)	#bot
-			rect(current+String.char_size-3,self.y,3,scale_y-10)	#right
-
-			color = COLORS["STRING"]
-			fill(color[0],color[1],color[2])
-			text(char,int(current+3+(String.char_size-6)/2),int(self.y+scale_y/2))
-
-			current += String.char_size+10
-		textSize(10)
-		text(str(self.name+"="+str(self.value)),self.x,self.y+self.height+15)
-
-
+		
+		color = COLORS["CHAR_BG"]
+		fill(color[0],color[1],color[2])
+		rect(self.x,self.y,17,self.height)
+		
+		color = COLORS["CHAR"]
+		fill(color[0],color[1],color[2])
+		text(self.value,self.x+5,int(self.y+scale_y/2+5))
+		if self.name!="":
+			textSize(10)
+			text(str(self.name+"="+str(self.value)),self.x,self.y+self.height+15)
 		stroke(0)
-		###
-class List(Variable):
 
+class List(Variable):
 
 	def __init__(self,value=[],x=50,y=-1,height=scale_y,name=""):
 		if y==-1:
 			y=Variable.variable_count*(scale_y+25)+10
-		Variable.__init__(self,x,y,len(value)*(Variable.max_size+10)+10,height,name)
+		Variable.__init__(self,x-5,y-len(value)*(scale_y+25)-5,Variable.max_size,len(value)*(scale_y+25),name)
 		self.value = value
+		Variable.variable_block_height+=25
 		Variable.variable_count+=1
 	def display(self):
 		#border
 		color = COLORS["LIST_BORDER"]
-		fill(color[0],color[1],color[2])
 		stroke(color[0],color[1],color[2])
 
-		rect(self.x,self.y,3,scale_y)				#left
-		rect(self.x,self.y+scale_y-3,self.width,3)	#bot
-		rect(self.x+self.width,self.y-3,3,scale_y)	#right
+		line(self.x,self.y,self.x+30,self.y)							#top
+		line(self.x,self.y,self.x,self.y+self.height)					#left
+		line(self.x,self.y+self.height,self.x+30,self.y+self.height)	#bottom
+		current=0
+		for i in self.value:
+			line(self.x,self.y+current,self.x+30,self.y+current)
+			current+=scale_y+25
 
-		#parts
-		noStroke()
 
-		current = self.x+13
-		textSize(12)		#SIZE SHOULD BE ABLE TO BE SELECTED
-		for element in self.value:
-			#ELEMENT BORDER
-			color = COLORS["LIST_ELEMENT"]
-			fill(color[0],color[1],color[2])
-			rect(current,self.y,3,scale_y-10)	#left
-			rect(current,self.y+scale_y-13,Variable.max_size+3,3)	#bot
-			rect(current+Variable.max_size+6,self.y,3,scale_y-10)	#right
-
-			#color = COLORS["STRING"]
-			#fill(color[0],color[1],color[2])
-			#text(char,int(current+3+(String.char_size-6)/2),int(self.y+scale_y/2))
-			element.x=current+3; element.y=self.y-20
-			element.display()
-
-			current += Variable.max_size+13
-		textSize(10)
-		text(str(self.name+"="+str(self.value)),self.x,self.y+self.height+15)
+		if self.name!="":
+			textSize(10)
+			string="["
+			for i in self.value:
+				string+=str(i.value)
+				string+=","
+			string+="]"
+			text(string,self.x,self.y+self.height+15)
 
 
 		stroke(0)
-		###
-		#CONTINUE HERE
-
-		#CONTINUE HERE

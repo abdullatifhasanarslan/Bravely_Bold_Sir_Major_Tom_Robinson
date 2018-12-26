@@ -58,6 +58,7 @@ def draw():
 			h = Variables.Integer(value=100,name="h")
 			j = Variables.Integer(value=100,name="j")
 			k = Variables.Integer(value=100,name="k")
+			l=Variables.Char(value="l")
 			line[2]=False;line[3]=True
 		elif line[3] :
 			#a+=b 	int+=int
@@ -137,12 +138,45 @@ def draw():
 			f=Variables.Bool(value=None,name="f")
 			line[8]=False;line[9]=True
 		elif line[9]:
-			g=Variables.String(value="BRAVE SIR ROBIN",name="g")
+			g=Variables.List(value=[Variables.Char("B"),
+				Variables.Char("R"),
+				Variables.Char("A"),
+				Variables.Char("V"),
+				Variables.Char("E"),
+				Variables.Char(" "),
+				Variables.Char("S"),
+				Variables.Char("I"),
+				Variables.Char("R"),
+				Variables.Char(" "),
+				Variables.Char("R"),
+				Variables.Char("O"),
+				Variables.Char("B"),
+				Variables.Char("I"),
+				Variables.Char("N")],name="g")
 			line[9]=False;line[10]=True
 		elif line[10]:
-			pass
-			#h=Variables.List(value=[a,b,c,d,e,f,g],name="g")
-			#line[10]=False;line[11]=True
+			h=Variables.List(value=[Variables.Integer(value=100,name="z"),
+			Variables.Integer(value=100,name="x"),
+			Variables.Integer(value=100,name="y"),
+			Variables.Integer(value=100,name="v"),
+			Variables.Integer(value=100,name="w"),
+			Variables.Integer(value=100,name="q"),
+			Variables.Integer(value=100,name="h"),
+			Variables.Integer(value=100,name="j"),
+			Variables.Integer(value=100,name="k")],name="h")
+			line[10]=False;line[11]=True
+		elif line[11]:
+			temp_y=g.value[len(g.value)-1].y
+			for i in range(len(g.value)-1,0,-1):
+				g.value[i].y=g.value[i-1].y
+			g.value[0].y=temp_y
+
+			temp=g.value[0]
+			for i in range(1,len(g.value)):
+				g.value[i-1]=g.value[i]
+			g.value[i]=temp
+
+			#line[11]=False;line[12]=True
 		"""
 		elif line[11]:
 			j=Variables.List(value=[a,b,f,g],name="g")
