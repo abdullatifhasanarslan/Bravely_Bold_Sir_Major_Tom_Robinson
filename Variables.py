@@ -1,4 +1,5 @@
 from pyprocessing import *
+import copy
 
 scale_y = 30
 WIDTH,HEIGHT = 900,800
@@ -12,7 +13,8 @@ COLORS = {"VARIABLE":(155,155,0),
 		  "LIST_BORDER":(200,0,200),
 		  "LIST_ELEMENT":(200,0,200),
 		  "CHAR":(255,255,100),
-		  "CHAR_BG":(50,50,50)}
+		  "CHAR_BG":(50,50,50),
+		  "FUNCTION":(0,0,200)}
 
 action=[True,False,False,False]
 
@@ -30,12 +32,15 @@ class Variable:
 	variable_block_width=240
 	variable_block_height=15
 
-	def __init__(self,x=50,y=-1,width=100,height=scale_y,name=""):
+	def __init__(self,x=50,y=-1,width=100,height=scale_y,name="",temp=False):
 		self.name = str(name)
 		self.X, self.Y = int(x), int(y)
 		self.x, self.y = int(x), int(y)
 		self.width, self.height = int(width), int(height)
 		Variable.all_variables.append(self)
+		if not temp:
+			Variable.variable_block_height+=self.height+25
+			Variable.variable_count+=1
 
 	def move(self,x,y):
 		speed = 20
@@ -76,7 +81,7 @@ class Variable:
 		rect(Variable.variable_block_x,Variable.variable_block_y,Variable.variable_block_width,Variable.variable_block_height)
 		stroke(0)
 
-		# THIS IS HOW IT ACTUALLY SHOULD
+		# THIS IS HOW IT ACTUALLY SHOULD. IT SHOULD ADAPT WIDTH
 
 		# noFill()
 		# stroke(255)
@@ -98,13 +103,24 @@ class Variable:
 			textSize(10)
 			text(self.name,self.x+self.width/2,self.y+self.height+15)
 
+	def deepcopy(self):
+		new_copy=copy.deepcopy(self)
+		Variable.all_variables.append(new_copy)
+		return new_copy
+	def copy(self):
+		new_copy=copy.copy(self)
+		Variable.all_variables.append(new_copy)
+		return new_copy
 
 	def destroy(self):
-		Variable.all_variables.remove(self)		
-		Variable.variable_count-=1
-		Variable.variable_block_height-=self.height+25
+		Variable.all_variables.remove(self)	
+		#Variable.variable_count-=1						#I think these won't be necessary
+		#Variable.variable_block_height-=self.height+25	#because I want to take C as language
+														#and variables can not be deleted in C
 		del self
-
+	def __repr__(self):
+		return str(self.value)+" "+self.name
+"""
 class Bool(Variable):
 
 	def __init__(self,value=True,x=50,y=-1,height=scale_y,name=""):
@@ -146,23 +162,23 @@ class Bool(Variable):
 		rect(0,0,3,self.height/2)
 		popMatrix()
 		rectMode(CORNER)
+		textSize(10)
 		if self.name!="":
-			textSize(10)
 			text(self.name+" = "+str(self.value),self.x+self.width/2,self.y+self.height+15)
+		else:
+			text(str(self.value),self.x+self.width/2,self.y+self.height+15)
 	
 	#CONTINUE FROM HERE
 	def NOT(self):
 		pass
-
+"""
 class Integer(Variable):
 	
-	def __init__(self,value=0,x=50,y=-1,height=scale_y,name=""):
+	def __init__(self,value=0,x=50,y=-1,height=scale_y,name="",temp=False):
 		if y==-1:
 			y=Variable.variable_count*(scale_y+25)+10
-		Variable.__init__(self,x,y,value,height,name)
+		Variable.__init__(self,x,y,value,height,name,temp)
 		self.value = value
-		Variable.variable_block_height+=self.height+25
-		Variable.variable_count+=1
 
 	def display(self):
 		color = COLORS["INTEGER"]
@@ -179,12 +195,15 @@ class Integer(Variable):
 			#...
 			rect(self.x+Variable.max_size-20,self.y,20,self.height)
 		
+		textSize(10)
 		if self.name!="":
-			textSize(10)
 			text(str(self.name+"="+str(self.value)),self.x,self.y+self.height+15)
+		else:
+			text(str(self.value),self.x,self.y+self.height+15)
 
 		fill(0)	#This is necessary because it effects whole program
-
+	def __add__(a,b):
+		return a.value+b.value
 	"""
 	#NOT USED-----------------------	
 	def __add__(a,b):
@@ -215,15 +234,13 @@ class Integer(Variable):
 
 class Float(Variable):
 
-	def __init__(self,value=0.0,x=50,y=-1,height=scale_y,name=""):
+	def __init__(self,value=0.0,x=50,y=-1,height=scale_y,name="",temp=False):
 		if y==-1:
 			y=Variable.variable_count*(scale_y+25)+10
-		Variable.__init__(self,x,y,value,height,name)
+		Variable.__init__(self,x,y,value,height,name,temp)
 		self.value = value
 		self.integer = int(value)
 		self.decimal = value%1
-		Variable.variable_block_height+=self.height+25
-		Variable.variable_count+=1
 
 	def display(self):
 		color = COLORS["FLOAT"]
@@ -244,12 +261,15 @@ class Float(Variable):
 			#decimal
 			rect(self.x+Variable.max_size,self.y+scale_y,10,-int(self.decimal*scale_y))	#decimal
 
+		textSize(10)
 		if self.name!="":
-			textSize(10)
 			text(str(self.name+"="+str(self.value)),self.x,self.y+self.height+15)
+		else:
+			text(str(self.value),self.x,self.y+self.height+15)
 	
 		fill(0)	#This is necessary because it effects whole program
-
+	def __add__(a,b):
+		return a.value+b.value
 	"""
 	#NOT USED-----------------------
 	def __add__(c,a):
@@ -278,13 +298,11 @@ class Float(Variable):
 class Char(Variable):
 	char_size = 30
 
-	def __init__(self,value="",x=50,y=-1,height=scale_y,name=""):
+	def __init__(self,value="",x=50,y=-1,height=scale_y,name="",temp=False):
 		if y==-1:
 			y=Variable.variable_count*(scale_y+25)+10
-		Variable.__init__(self,x,y,len(value)*(Char.char_size+10)+10,height,name)
+		Variable.__init__(self,x,y,len(value)*(Char.char_size+10)+10,height,name,temp)
 		self.value = value
-		Variable.variable_block_height+=self.height+25
-		Variable.variable_count+=1
 	def display(self):
 		#parts
 		noStroke()
@@ -297,20 +315,19 @@ class Char(Variable):
 		color = COLORS["CHAR"]
 		fill(color[0],color[1],color[2])
 		text(self.value,self.x+5,int(self.y+scale_y/2+5))
+		textSize(10)
 		if self.name!="":
-			textSize(10)
-			text(str(self.name+"="+str(self.value)),self.x,self.y+self.height+15)
+			text(self.name+"="+self.value,self.x,self.y+self.height+15)
 		stroke(0)
 
 class List(Variable):
 
-	def __init__(self,value=[],x=50,y=-1,height=scale_y,name=""):
+	def __init__(self,value=[],x=50,y=-1,height=0,name="",temp=False):
 		if y==-1:
-			y=Variable.variable_count*(scale_y+25)+10
-		Variable.__init__(self,x-5,y-len(value)*(scale_y+25)-5,Variable.max_size,len(value)*(scale_y+25),name)
+			y=(Variable.variable_count-len(value))*(scale_y+25)+5
+		Variable.__init__(self,x-5,y,Variable.max_size,len(value)*(scale_y+25),name,temp)
+		Variable.variable_block_height-=self.height-25
 		self.value = value
-		Variable.variable_block_height+=25
-		Variable.variable_count+=1
 	def display(self):
 		#border
 		color = COLORS["LIST_BORDER"]
@@ -325,14 +342,17 @@ class List(Variable):
 			current+=scale_y+25
 
 
+		textSize(10)
+		string="["
+		for i in self.value:
+			string+=str(i.value)
+			string+=","
+		string+="]"
 		if self.name!="":
-			textSize(10)
-			string="["
-			for i in self.value:
-				string+=str(i.value)
-				string+=","
-			string+="]"
-			text(string,self.x,self.y+self.height+15)
+			text(str(self.name+"="+string),self.x,self.y+self.height+15)
+		else:
+			text(str(string),self.x,self.y+self.height+15)
 
 
 		stroke(0)
+
