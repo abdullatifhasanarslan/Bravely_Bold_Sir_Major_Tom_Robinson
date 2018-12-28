@@ -105,6 +105,8 @@ class Function:
 		stroke(0)
 
 	def display(self):		
+		stroke(0)
+		fill(0)
 		color = COLORS["FUNCTION"]
 		strokeWeight(4)
 		stroke(color[0],color[1],color[2])
@@ -178,15 +180,44 @@ class Function:
 	def destroy(self):
 		Function.all_functions.remove(self)		
 		Function.function_count-=1
-		Function.function_block_height-=self.height+25
+		Function.function_block_width-=self.width+25
 		del self
 		
 
 class Add(Function):
 	
-	def __init__(self,input_number=0,output_number=0,x=-1,y=25,width=scale_x,height=225,name="",temp=False):
+	def __init__(self,input_number=2,output_number=1,x=-1,y=25,width=scale_x,height=225,name="",temp=False):
 		if x==-1:
 			x=Function.function_count*(scale_x+25)+300
 		def add(x,y):
 			return x+y
-		Function.__init__(self,x=x,y=y,input_number=2,output_number=1,function=add,name="ADDER",temp=temp)
+		Function.__init__(self,x=x,y=y,input_number=input_number,output_number=output_number,function=add,name="ADDER",temp=temp)
+
+class Assign(Function):
+	def __init__(self,input_number=2,output_number=0,x=-1,y=25,width=scale_x,height=225,name="",temp=True):
+		if x==-1:
+			x=Function.function_count*(scale_x+25)+300
+		def assign(x,y):
+			x.value=y.value
+		Function.__init__(self,x=x,y=y,input_number=input_number,output_number=output_number,function=assign,name="Assign",temp=temp)
+
+	def display(self):
+		stroke(0)
+		fill(0)
+		return
+	def implement(self,*args):
+		global deneme,right_side,return_value
+		global WIDTH,HEIGHT
+		if action[0]:
+			right_side=args[1].deepcopy()
+			action[0]=False;action[1]=True
+		elif action[1] and right_side.move(right_side.X+300,right_side.Y):
+			action[1]=False;action[2]=True
+		elif action[2] and right_side.move(args[0].X+300,args[0].Y):
+			action[2]=False;action[3]=True
+		elif action[3] and right_side.move(args[0].X,args[0].Y):
+			self.function(*args)
+			right_side.destroy()
+			action[3]=False;action[0]=True
+			return True
+		return False

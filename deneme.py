@@ -9,7 +9,7 @@ SCALE = 1
 
 
 #FLOW CONTROLLERS----------------------
-FLOW = True
+FLOW = False
 line=[True,False,False,False,False,False,False,False,False,False,False,False,False,False]
 action=[True,False,False,False]
 
@@ -31,7 +31,7 @@ def setup():
 	background(0,0,0)
 
 def draw():
-	global a,b,c,d,e,f,g,h,j,m,n,result,adder,temp,ORIJIN_X,ORIJIN_Y,SCALE,FLOW
+	global a,b,c,d,e,f,g,h,j,m,n,index,assigner,pointers,result,adder,temp,ORIJIN_X,ORIJIN_Y,SCALE,FLOW
 
 	#FOR DISPLAY----------------------
 	background(0,0,0)
@@ -44,27 +44,73 @@ def draw():
 	if FLOW:
 		if line[0]:
 			#a=50	int assignment
+
 			a = Variables.Integer(value=50,name="a")
-			line[0]=False;line[1]=True
+			b = Variables.Integer(value=100,name="b")
+			l=Variables.Char(value="l")
+			c = Variables.Float(value=27.4,name="c")
+			adder=Functions.Add()
+			assigner=Functions.Assign(input_number=2)
+			
+			g=Variables.List(value=[Variables.Char("B"),
+				Variables.Char("R"),
+				Variables.Char("A"),
+				Variables.Char("V"),
+				Variables.Char("E"),
+				Variables.Char(" "),
+				Variables.Char("S"),
+				Variables.Char("I"),
+				Variables.Char("R"),
+				Variables.Char(" "),
+				Variables.Char("R"),
+				Variables.Char("O"),
+				Variables.Char("B"),
+				Variables.Char("I"),
+				Variables.Char("N")],name="g")
+
+			pointers=Variables.List(value=[Variables.Pointer(value=g.value[0],name="z"),
+				Variables.Pointer(value=g.value[1],name="x"),
+				Variables.Pointer(value=g.value[2],name="y"),
+				Variables.Pointer(value=g.value[3],name="v"),
+				Variables.Pointer(value=g.value[4],name="w"),
+				Variables.Pointer(value=g.value[5],name="q"),
+				Variables.Pointer(value=g.value[6],name="h"),
+				Variables.Pointer(value=g.value[7],name="j"),
+				Variables.Pointer(value=g.value[8],name="k"),
+				Variables.Pointer(value=g.value[9],name="j"),
+				Variables.Pointer(value=g.value[10],name="j"),
+				Variables.Pointer(value=g.value[11],name="j"),
+				Variables.Pointer(value=g.value[12],name="j"),
+				Variables.Pointer(value=g.value[13],name="j"),
+				Variables.Pointer(value=g.value[14],name="j"),],name="Niyazi")
+
+			temp=Variables.Integer(value=0,name="temp")
+			h=Variables.List(value=[Variables.Integer(value=10,name="z"),
+				Variables.Integer(value=20,name="x"),
+				Variables.Integer(value=30,name="y"),
+				Variables.Integer(value=40,name="v"),
+				Variables.Integer(value=50,name="w"),
+				Variables.Integer(value=60,name="q"),
+				Variables.Integer(value=70,name="h"),
+				Variables.Integer(value=80,name="j"),
+				Variables.Integer(value=90,name="k")],name="hayri")
+			pointers=Variables.List(value=[Variables.Pointer(value=h.value[0],name="z"),
+				Variables.Pointer(value=h.value[1],name="x"),
+				Variables.Pointer(value=h.value[2],name="y"),
+				Variables.Pointer(value=h.value[3],name="v"),
+				Variables.Pointer(value=h.value[4],name="w"),
+				Variables.Pointer(value=h.value[5],name="q"),
+				Variables.Pointer(value=h.value[6],name="h"),
+				Variables.Pointer(value=h.value[7],name="j"),
+				Variables.Pointer(value=h.value[8],name="k")],name="Niyazi")
+
+			line[0]=False;line[2]=True
 		elif line[1]:
 			#b=100	int assignment
-			b = Variables.Integer(value=100,name="b")
-			z = Variables.Integer(value=100,name="z")
-			x = Variables.Integer(value=100,name="x")
-			y = Variables.Integer(value=100,name="y")
-			v = Variables.Integer(value=100,name="v")
-			w = Variables.Integer(value=100,name="w")
-			q = Variables.Integer(value=100,name="q")
-			h = Variables.Integer(value=100,name="h")
-			j = Variables.Integer(value=100,name="j")
-			k = Variables.Integer(value=100,name="k")
 			#k = Variables.Variable(x=-100,name="k")
 			line[1]=False;line[2]=True
 		elif line[2]:
 			#c=27.4	float assignment
-			c = Variables.Float(value=27.4,name="c")
-			l=Variables.Char(value="l")
-			adder=Functions.Add()
 			line[2]=False;line[3]=True
 		elif line[3]:
 			#a+=b 	int+=int
@@ -159,43 +205,19 @@ def draw():
 			#f=Variables.Bool(value=None,name="f")
 			line[8]=False;line[9]=True
 		elif line[9]:
-			h=Variables.List(value=[Variables.Integer(value=10,name="z"),
-			Variables.Integer(value=20,name="x"),
-			Variables.Integer(value=30,name="y"),
-			Variables.Integer(value=40,name="v"),
-			Variables.Integer(value=50,name="w"),
-			Variables.Integer(value=60,name="q"),
-			Variables.Integer(value=70,name="h"),
-			Variables.Integer(value=80,name="j"),
-			Variables.Integer(value=90,name="k")],name="hayri")
 			line[9]=False;line[10]=True
 		elif line[10]:
-			g=Variables.List(value=[Variables.Char("B"),
-				Variables.Char("R"),
-				Variables.Char("A"),
-				Variables.Char("V"),
-				Variables.Char("E"),
-				Variables.Char(" "),
-				Variables.Char("S"),
-				Variables.Char("I"),
-				Variables.Char("R"),
-				Variables.Char(" "),
-				Variables.Char("R"),
-				Variables.Char("O"),
-				Variables.Char("B"),
-				Variables.Char("I"),
-				Variables.Char("N")],name="g")
 			line[10]=False;line[11]=True
 		elif line[11]:
-			temp_y=h.value[len(h.value)-1].y
-			for i in range(len(h.value)-1,0,-1):
-				h.value[i].y=h.value[i-1].y
-			h.value[0].y=temp_y
-
-			temp=h.value[0]
-			for i in range(1,len(h.value)):
-				h.value[i-1]=h.value[i]
-			h.value[i]=temp
+			if action[0] and assigner.implement(temp,h.value[0]):
+				index=1
+				action[0]=False;action[1]=True
+			elif action[1] and assigner.implement(h.value[index-1],h.value[index]):
+				index+=1
+				if index==len(h.value):
+					action[1]=False;action[2]=True
+			elif action[2] and assigner.implement(h.value[index-1],temp):
+				action[2]=False;action[0]=True
 
 			#line[11]=False;line[12]=True
 		"""
@@ -224,8 +246,11 @@ def draw():
 	A:ZOOM IN
 	S:ZOOM OUT
 	"""
-	if key.char == "f":		
-		FLOW = not FLOW
+	if key.char == "o":		
+		FLOW = True
+		key.char = " "
+	elif key.char == "p":		
+		FLOW = False
 		key.char = " "
 	elif key.char == "r":
 		ORIJIN_X,ORIJIN_Y=0,0

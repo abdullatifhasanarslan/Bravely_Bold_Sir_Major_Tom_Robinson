@@ -1,5 +1,6 @@
 from pyprocessing import *
 import copy
+import random
 
 scale_y = 30
 WIDTH,HEIGHT = 900,800
@@ -13,7 +14,8 @@ COLORS = {"VARIABLE":(155,155,0),
 		  "LIST_BORDER":(200,0,200),
 		  "LIST_ELEMENT":(200,0,200),
 		  "CHAR":(255,255,100),
-		  "CHAR_BG":(50,50,50),
+		  "CHAR_BG":(100,100,100),
+		  "POINTER_BG":(100,100,100),
 		  "FUNCTION":(0,0,200)}
 
 action=[True,False,False,False]
@@ -77,8 +79,11 @@ class Variable:
 
 	def variableblock():
 		noFill()
+		strokeWeight(5)
 		stroke(255)
-		rect(Variable.variable_block_x,Variable.variable_block_y,Variable.variable_block_width,Variable.variable_block_height)
+		line(Variable.variable_block_x,Variable.variable_block_y,Variable.variable_block_x+Variable.variable_block_width,Variable.variable_block_y)#TOP
+		line(Variable.variable_block_x+Variable.variable_block_width,Variable.variable_block_y,Variable.variable_block_x+Variable.variable_block_width,Variable.variable_block_y+Variable.variable_block_height)#RIGHT
+		line(Variable.variable_block_x,Variable.variable_block_y+Variable.variable_block_height,Variable.variable_block_x+Variable.variable_block_width,Variable.variable_block_y+Variable.variable_block_height)#BOT
 		stroke(0)
 
 		# THIS IS HOW IT ACTUALLY SHOULD. IT SHOULD ADAPT WIDTH
@@ -96,6 +101,8 @@ class Variable:
 		# stroke(0)
 
 	def display(self):		
+		stroke(0)
+		fill(0)
 		color = COLORS["VARIABLE"]
 		fill(color[0],color[1],color[2])
 		rect(self.x,self.y,100,self.height)
@@ -119,7 +126,7 @@ class Variable:
 														#and variables can not be deleted in C
 		del self
 	def __repr__(self):
-		return str(self.value)+" "+self.name
+		return self.name+" "+str(self.value)
 """
 class Bool(Variable):
 
@@ -181,6 +188,8 @@ class Integer(Variable):
 		self.value = value
 
 	def display(self):
+		stroke(0)
+		fill(0)
 		color = COLORS["INTEGER"]
 		fill(color[0],color[1],color[2])
 		if(self.value<=Variable.max_size):
@@ -243,6 +252,8 @@ class Float(Variable):
 		self.decimal = value%1
 
 	def display(self):
+		stroke(0)
+		fill(0)
 		color = COLORS["FLOAT"]
 		fill(color[0],color[1],color[2])
 		if(self.value<Variable.max_size):
@@ -301,16 +312,18 @@ class Char(Variable):
 	def __init__(self,value="",x=50,y=-1,height=scale_y,name="",temp=False):
 		if y==-1:
 			y=Variable.variable_count*(scale_y+25)+10
-		Variable.__init__(self,x,y,len(value)*(Char.char_size+10)+10,height,name,temp)
+		Variable.__init__(self,x,y,Char.char_size,height,name,temp)
 		self.value = value
 	def display(self):
 		#parts
+		stroke(0)
+		fill(0)
 		noStroke()
 		textSize(12)		#SIZE SHOULD BE ABLE TO BE SELECTED
 		
 		color = COLORS["CHAR_BG"]
 		fill(color[0],color[1],color[2])
-		rect(self.x,self.y,17,self.height)
+		rect(self.x,self.y,Char.char_size,self.height)
 		
 		color = COLORS["CHAR"]
 		fill(color[0],color[1],color[2])
@@ -320,6 +333,72 @@ class Char(Variable):
 			text(self.name+"="+self.value,self.x,self.y+self.height+15)
 		stroke(0)
 
+class Pointer(Variable):
+	pointer_size = 30
+	pointer_count = 0
+	pointer_interval = 10
+	def __init__(self,value=None,x=50,y=-1,height=scale_y,name="",temp=False):
+		if y==-1:
+			y=Variable.variable_count*(scale_y+25)+10
+		Variable.__init__(self,x,y,Pointer.pointer_size,height,name,temp)
+		self.value = value
+		self.arrow_color=[random.randint(0,255),random.randint(0,255),random.randint(0,255)]
+		self.arrow_distance=Pointer.pointer_count*Pointer.pointer_interval+40
+		
+		if type(self.value)==Variable or type(self.value)==Pointer or type(self.value)==None:
+			self.color = COLORS["VARIABLE"]
+		elif type(self.value)==Integer:
+			self.color = COLORS["INTEGER"]
+		elif type(self.value)==Float:
+			self.color = COLORS["FLOAT"]
+		elif type(self.value)==Char:
+			self.color = COLORS["CHAR"]
+		elif type(self.value)==List:
+			self.color = COLORS["LIST"]
+		
+		Pointer.pointer_count+=1
+	
+	def display(self):
+		stroke(0)
+		fill(0)
+		strokeWeight(4)
+		#BG
+		color = COLORS["POINTER_BG"]
+		fill(color[0],color[1],color[2])
+		rect(self.x,self.y,self.width,self.height)
+
+		
+		#COLOR
+		stroke(self.color[0],self.color[1],self.color[2])
+
+		#STAR
+		line(self.x,self.y,self.x+self.width,self.y+self.height)					#LEFT-UP TO RIGHT-BOT
+		line(self.x+self.width/2,self.y,self.x+self.width/2,self.y+self.height)		#TOP to BOT
+		line(self.x+self.width,self.y,self.x,self.y+self.height)					#RIGHT-UP TO LEFT-BOT
+		line(self.x,self.y+self.height/2,self.x+self.width,self.y+self.height/2)	#LEFT to RIGHT
+		
+		#HOW TO POINT
+		color = self.arrow_color
+		stroke(color[0],color[1],color[2])
+		if type(self.value)!=None:
+			line(self.x-5,self.y+self.height/3,self.X-self.arrow_distance,self.y+self.height/3)														#POINTER
+			line(self.X-self.arrow_distance,self.y+self.height/3,self.X-self.arrow_distance,self.value.y+2*self.value.height/3)				#MAIN
+			line(self.X-self.arrow_distance,self.value.y+2*self.value.height/3,self.value.X-20,self.value.y+2*self.value.height/3)	#POINTED
+			line(self.value.X-20,self.value.y+2*self.value.height/3,self.value.X-25,self.value.y+2*self.value.height/3-5)			#ARROW UPSIDE
+			line(self.value.X-20,self.value.y+2*self.value.height/3,self.value.X-25,self.value.y+2*self.value.height/3+5)			#ARROW UPSIDE
+		"""
+		#I was trying to make it look outside but then I noticed if it doesn't point to something, then no arrow required
+		else:
+			line(self.x-5,self.y+self.height/3,self.X-(Pointer.pointer_count*Pointer.pointer_interval+20),self.y+self.height/3)						#POINTER
+			line(self.X-(Pointer.pointer_count*Pointer.pointer_interval+20),self.y+self.height/3,self.X-(Pointer.pointer_count*Pointer.pointer_interval+20)+5,self.y+self.height/3-5)												#ARROW UPSIDE
+			line(self.X-(Pointer.pointer_count*Pointer.pointer_interval+20),self.y+self.height/3,self.X-(Pointer.pointer_count*Pointer.pointer_interval+20)+4,self.y+self.height/3+5)												#ARROW UPSIDE
+		"""
+		textSize(10)
+		fill(self.color[0],self.color[1],self.color[2])
+		if self.name!="":
+			text(self.name+"="+self.value.name,self.x,self.y+self.height+15)
+		stroke(0)
+		strokeWeight(0)
 class List(Variable):
 
 	def __init__(self,value=[],x=50,y=-1,height=0,name="",temp=False):
@@ -330,9 +409,12 @@ class List(Variable):
 		self.value = value
 	def display(self):
 		#border
+		stroke(0)
+		fill(0)
 		color = COLORS["LIST_BORDER"]
 		stroke(color[0],color[1],color[2])
-
+		fill(color[0],color[1],color[2])
+		strokeWeight(3)
 		line(self.x,self.y,self.x+30,self.y)							#top
 		line(self.x,self.y,self.x,self.y+self.height)					#left
 		line(self.x,self.y+self.height,self.x+30,self.y+self.height)	#bottom
