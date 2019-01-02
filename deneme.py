@@ -49,7 +49,7 @@ def draw():
 			b = Variables.Integer(value=100,name="b")
 			l=Variables.Char(value="l")
 			c = Variables.Float(value=27.4,name="c")
-			adder=Functions.Add()
+			adder=Functions.Add(temp=True)
 			assigner=Functions.Assign(input_number=2)
 			
 			g=Variables.List(value=[Variables.Char("B"),
@@ -68,22 +68,7 @@ def draw():
 				Variables.Char("I"),
 				Variables.Char("N")],name="g")
 
-			pointers=Variables.List(value=[Variables.Pointer(value=g.value[0],name="z"),
-				Variables.Pointer(value=g.value[1],name="x"),
-				Variables.Pointer(value=g.value[2],name="y"),
-				Variables.Pointer(value=g.value[3],name="v"),
-				Variables.Pointer(value=g.value[4],name="w"),
-				Variables.Pointer(value=g.value[5],name="q"),
-				Variables.Pointer(value=g.value[6],name="h"),
-				Variables.Pointer(value=g.value[7],name="j"),
-				Variables.Pointer(value=g.value[8],name="k"),
-				Variables.Pointer(value=g.value[9],name="j"),
-				Variables.Pointer(value=g.value[10],name="j"),
-				Variables.Pointer(value=g.value[11],name="j"),
-				Variables.Pointer(value=g.value[12],name="j"),
-				Variables.Pointer(value=g.value[13],name="j"),
-				Variables.Pointer(value=g.value[14],name="j"),],name="Niyazi")
-
+			
 			temp=Variables.Integer(value=0,name="temp")
 			h=Variables.List(value=[Variables.Integer(value=10,name="z"),
 				Variables.Integer(value=20,name="x"),
@@ -95,14 +80,14 @@ def draw():
 				Variables.Integer(value=80,name="j"),
 				Variables.Integer(value=90,name="k")],name="hayri")
 			pointers=Variables.List(value=[Variables.Pointer(value=h.value[0],name="z"),
-				Variables.Pointer(value=h.value[1],name="x"),
+				Variables.Pointer(value=h.value[4],name="x"),
 				Variables.Pointer(value=h.value[2],name="y"),
-				Variables.Pointer(value=h.value[3],name="v"),
-				Variables.Pointer(value=h.value[4],name="w"),
-				Variables.Pointer(value=h.value[5],name="q"),
-				Variables.Pointer(value=h.value[6],name="h"),
-				Variables.Pointer(value=h.value[7],name="j"),
-				Variables.Pointer(value=h.value[8],name="k")],name="Niyazi")
+				Variables.Pointer(value=h.value[1],name="v"),
+				Variables.Pointer(value=h.value[8],name="w"),
+				Variables.Pointer(value=h.value[6],name="q"),
+				Variables.Pointer(value=h.value[7],name="h"),
+				Variables.Pointer(value=h.value[5],name="j"),
+				Variables.Pointer(value=h.value[3],name="k")],name="Niyazi")
 
 			line[0]=False;line[2]=True
 		elif line[1]:
@@ -286,7 +271,7 @@ def draw():
 
 	for function in Functions.Function.all_functions:
 		function.display()
-	Functions.Function.functionblock()
+	#Functions.Function.functionblock()
 
 
 

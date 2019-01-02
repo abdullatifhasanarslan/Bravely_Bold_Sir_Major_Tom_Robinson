@@ -32,11 +32,12 @@ class Function:
 
 	#Function height can also change. This is not enogh. Also functions should get wider depending on content
 	#Functions will have their own variable blocks. So this is just for prototyping. All code should remade
+	"""
 	function_block_x=285
 	function_block_y=5
 	function_block_width=15
 	function_block_height=265
-
+	"""
 	def __init__(self,input_number=0,output_number=0,x=-1,y=25,width=620,height=225,function=None,name="",temp=False):
 		self.name = str(name)
 		self.X, self.Y = int(x), int(y)
@@ -45,10 +46,11 @@ class Function:
 		self.input_number,self.output_number=input_number,output_number
 		self.function=function
 		Function.all_functions.append(self)
+		"""
 		if not temp:
 			Function.function_block_width+=self.width+25
 			Function.function_count+=1
-
+		"""
 
 		#For later use
 		self.input_places=[]
@@ -97,13 +99,13 @@ class Function:
 			return False
 		return True
 		#self.x, self.y = x, y
-
+	"""
 	def functionblock():
 		noFill()
 		stroke(255)
 		rect(Function.function_block_x,Function.function_block_y,Function.function_block_width,Function.function_block_height)
 		stroke(0)
-
+	"""
 	def display(self):		
 		stroke(0)
 		fill(0)
@@ -147,7 +149,7 @@ class Function:
 			deneme=Function(input_number=self.input_number,output_number=self.output_number,function=self.function,x=self.x,y=self.y,width=self.width,height=self.height,name=self.name,temp=True)
 			inputs=[variable.deepcopy() for variable in args]
 			action[0]=False;action[1]=True
-		elif action[1] and deneme.move(self.x+50,HEIGHT/2):
+		elif action[1]:
 			action[1]=False;action[2]=True
 		elif action[2] and all([inputs[i].move(deneme.x,deneme.y+deneme.input_places[i]) for i in range(len(inputs))]):
 			action[2]=False;action[3]=True
@@ -179,8 +181,10 @@ class Function:
 		return new_copy
 	def destroy(self):
 		Function.all_functions.remove(self)		
+		"""
 		Function.function_count-=1
 		Function.function_block_width-=self.width+25
+		"""
 		del self
 		
 
