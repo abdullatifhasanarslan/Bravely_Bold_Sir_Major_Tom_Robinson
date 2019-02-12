@@ -1,14 +1,18 @@
 from pyprocessing import *
 import copy
 import random
-
-scale_y = 30
-WIDTH,HEIGHT = 900,800
+Small_Variable_width = 30
+Variable_width = 200
+Variable_height = 30
 SCALE=1
+MOVE_DURATION=80
+SCALE_MULTIPLIER=2**(1/MOVE_DURATION)
+global_variables=[]
+temporary_variables=[]
 
-COLORS = {"VARIABLE":(155,155,0),
-		  "INTEGER":(255,255,255),
-		  "FLOAT":(100,100,255),
+COLORS = {"Variable":(155,155,0),
+		  "Integer":(255,255,255),
+		  "Float":(100,100,255),
 		  "TRUE":(0,255,0),
 		  "FALSE":(255,0,0),
 		  "LIST_BORDER":(200,0,200),
@@ -17,360 +21,298 @@ COLORS = {"VARIABLE":(155,155,0),
 		  "CHAR_BG":(100,100,100),
 		  "POINTER_BG":(100,100,100),
 		  "FUNCTION":(0,0,200)}
-
-action=[True,False,False,False]
-
+def reset_draw_settings():
+	"""This is necessary to keep things clean"""
+	stroke(0)
+	fill(0)
+	strokeWeight(1)
+	textSize(1)
 class Variable:
-	
-	variable_count = 0
-	all_variables = []
-	max_size = 200
+	"""Var0iables are just for easy handling, there won't be any pure Variable object
+	But maybe we can implement void variables, than they can be useful"""
+	#STATIC VALUES----------------------------
+	#It can be list of all Variables to easy acces or global Variables
 
-	#I know this is not nice. I will update it when I start to define functions
-	#Because functions will have their own variable blocks. So variable block should be
-	#an independent class
-	variable_block_x=30
-	variable_block_y=5
-	variable_block_width=240
-	variable_block_height=15
+	def __init__(self,name="",x=None,y=None,width=Variable_width,height=Variable_height):
+		self.name=name
+		self.height=height
+		self.width=width
+		self.x=int(x)
+		self.y=int(y)
+		self.X=x;self.Y=y #Just for rectangle in move function
+		self.namespace=None	#I hope I don't need this but to be able to acces to namespace
 
-	def __init__(self,x=50,y=-1,width=100,height=scale_y,name="",temp=False):
-		self.name = str(name)
-		self.X, self.Y = int(x), int(y)
-		self.x, self.y = int(x), int(y)
-		self.width, self.height = int(width), int(height)
-		Variable.all_variables.append(self)
-		if not temp:
-			Variable.variable_block_height+=self.height+25
-			Variable.variable_count+=1
+		#Drawing
+		self.move_frame=0
+		self.scale=SCALE
+		self.x_speed=0
+		self.y_speed=0
 
+	def set_namespace(self,namespace):	#namespace will be a Function objest
+		self.namespace=namespace
+	def __eq__(self,other):
+		return self.value==other.value	
+	def __ne__(self,other):
+		return self.value!=other.value
+	def __repr__(self):
+		return self.name + "=" + str(self.value)
+
+	#Drawing part
 	def move(self,x,y):
-		speed = 20
-		remaining_x = int(x)-self.x
-		remaining_y = int(y)-self.y
-		#Going in x axis-----------
-		if(remaining_x>0):
-			remaining_x-=speed
-			self.x += speed
-			if remaining_x<0:
-				self.x = int(x)
+		global MOVE_DURATION
+		#divide movement to MOVE_DURATION. So in 10th frame it will be on half of the way
+		#Going---------------------
+		self.x += self.x_speed
+		self.y += self.y_speed
+		if self.move_frame==0:
+			remaining_x = int(x)-self.x
+			remaining_y = int(y)-self.y
+			self.x_speed=remaining_x/MOVE_DURATION
+			self.y_speed=remaining_y/MOVE_DURATION
+			self.move_frame+=1
 			return False
-		elif(remaining_x<0):
-			remaining_x+=speed
-			self.x -= speed
-			if remaining_x>0:
-				self.x = int(x)
+		elif self.move_frame<=MOVE_DURATION/2:
+			self.scale*=SCALE_MULTIPLIER
+			self.move_frame+=1
 			return False
-		#Going in y axis-----------
-		if(remaining_y>0):
-			remaining_y-=speed
-			self.y += speed
-			if remaining_y<0:
-				self.y = int(y)
-			return False
-		elif(remaining_y<0):
-			remaining_y+=speed
-			self.y -= speed
-			if remaining_y>0:
-				self.y = int(y)
-			return False
-		return True
-		#self.x, self.y = x, y
+		else:
+			self.scale/=SCALE_MULTIPLIER
+			self.move_frame+=1
+			if self.move_frame==MOVE_DURATION:
+				self.x=x
+				self.y=y
+				self.move_frame=0
+				self.scale=SCALE
+				return True
 
-	def variableblock():
-		noFill()
-		strokeWeight(5)
-		stroke(255)
-		line(Variable.variable_block_x,Variable.variable_block_y,Variable.variable_block_x+Variable.variable_block_width,Variable.variable_block_y)#TOP
-		line(Variable.variable_block_x+Variable.variable_block_width,Variable.variable_block_y,Variable.variable_block_x+Variable.variable_block_width,Variable.variable_block_y+Variable.variable_block_height)#RIGHT
-		line(Variable.variable_block_x,Variable.variable_block_y+Variable.variable_block_height,Variable.variable_block_x+Variable.variable_block_width,Variable.variable_block_y+Variable.variable_block_height)#BOT
-		stroke(0)
-
-		# THIS IS HOW IT ACTUALLY SHOULD. IT SHOULD ADAPT WIDTH
-
-		# noFill()
-		# stroke(255)
-		# total_height = 0
-		# max_width = 0
-		# for variable in Variable.all_variables:
-		# 	#rect(variable.x-20,variable.y-5,variable.width+20,variable.height+15)
-		# 	total_height+=variable.height+15
-		# 	if variable.width > max_width:
-		# 		max_width=variable.width
-		# rect(30,5,max_width+40,total_height+15)
-		# stroke(0)
-
-	def display(self):		
-		stroke(0)
-		fill(0)
-		color = COLORS["VARIABLE"]
+	def display(self):
+		pushMatrix()
+		color = COLORS["Variable"]
 		fill(color[0],color[1],color[2])
-		rect(self.x,self.y,100,self.height)
+		stroke(color[0],color[1],color[2])
+		scale(self.scale)
+		rect(self.x,self.y,self.value,self.height)
 		if self.name!="":
 			textSize(10)
-			text(self.name,self.x+self.width/2,self.y+self.height+15)
-
+			text(self.name,self.x,self.y+self.height+15)
+		popMatrix()
+	#I couldn't remember difference between copy and deepcopy so I couldn't comment it
 	def deepcopy(self):
 		new_copy=copy.deepcopy(self)
-		Variable.all_variables.append(new_copy)
+		temporary_variables.append(new_copy)
 		return new_copy
 	def copy(self):
 		new_copy=copy.copy(self)
-		Variable.all_variables.append(new_copy)
+		temporary_variables.append(new_copy)
 		return new_copy
-
 	def destroy(self):
-		Variable.all_variables.remove(self)	
-		#Variable.variable_count-=1						#I think these won't be necessary
-		#Variable.variable_block_height-=self.height+25	#because I want to take C as language
-														#and variables can not be deleted in C
+		temporary_variables.remove(self)
 		del self
-	def __repr__(self):
-		return self.name+" "+str(self.value)
-"""
-class Bool(Variable):
 
-	def __init__(self,value=True,x=50,y=-1,height=scale_y,name=""):
-		if y==-1:
-			y=Variable.variable_count*(scale_y+25)
-		Variable.__init__(self,x,y,100,height,name) #width may change
-		self.value = value
-		if self.value == True:
-			self.angle = PI
-		elif self.value == False:
-			self.angle = 0
-		else:
-			self.angle = PI/2
-		Variable.variable_block_height+=self.height+25
-		Variable.variable_count+=1
+'''
+class Class(Variable):
+	"""Let's not mess with this big guy here for a while"""
+	pass
+'''
+
+class Number(Variable):
+	"""A meeting point for Char,Float,Double,Integer"""
+	def __init__(self,name,value=None,x=None,y=None,width=Variable_width,height=Variable_height):
+		Variable.__init__(self,name,x,y,width,height)
+		self.int_value=value
+	def __lt__(self,other):
+		return self.int_value<other.int_value
+	def __gt__(self,other):
+		return self.int_value>other.int_value
+	def __le__(self,other):
+		return self.int_value<=other.int_value
+	def __ge__(self,other):
+		return self.int_value>=other.int_value
+	def __add__(self,other):
+		return self.int_value+other.int_value
+	def __sub__(self,other):
+		return self.int_value-other.int_value
+	def __mul__(self,other):
+		return self.int_value*other.int_value
+	#ERROR HERE!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+	#TypeError: unsupported operand type(s) for /: 'Float' and 'Float'
+	def __div__(self,other):
+		return self.int_value/other.int_value
+	#ERROR HERE!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+	def __floordiv__(self,other):
+		return self.int_value//other.int_value
+	def __mod__(self,other):
+		return self.int_value%other.int_value
+
+class Float(Number):
+	def __init__(self,name,value,x=None,y=None,width=Variable_width,height=Variable_height):
+		Number.__init__(self,name,value//1,x,y,width,height)
+		self.float_value=value%1
+		self.value=value
 
 	def display(self):
-		#fixed part
-		color = COLORS["VARIABLE"]
-		fill(color[0],color[1],color[2])
-
-		rect(self.x+self.height,self.y,10,self.height)
-		arc(self.x+self.height,int(self.y+self.height/2),15,15,PI/2,TWO_PI-PI/2)
-
-		#lever part
-		rectMode(CORNERS)
+		
 		pushMatrix()
-		translate(self.x+self.height,int(self.y+self.height/2))
-		rotate(self.angle)
-		if self.value == True:
-			color = COLORS["TRUE"]
-			fill(color[0],color[1],color[2])
-		elif self.value == False:
-			color = COLORS["FALSE"]
-			fill(color[0],color[1],color[2])
-		else:
-			color = COLORS["VARIABLE"]
-			fill(color[0],color[1],color[2])
-		rect(0,0,3,self.height/2)
+		color = COLORS["Float"]
+		fill(color[0],color[1],color[2])
+		stroke(color[0],color[1],color[2])
+		scale(self.scale)
+		rect(self.x,self.y,self.int_value,self.height)	#integer
+		rect(self.x+self.int_value,self.y+self.height,10,-int(self.float_value*self.height))	#floating part
+		if self.name!="":
+			textSize(10)
+			text(self.name+"="+str(self.value),self.x,self.y+self.height+15)
 		popMatrix()
-		rectMode(CORNER)
-		textSize(10)
-		if self.name!="":
-			text(self.name+" = "+str(self.value),self.x+self.width/2,self.y+self.height+15)
+		
+
+	def __lt__(self,other):
+		if type(other)==Float:
+			return self.value<other.value	
 		else:
-			text(str(self.value),self.x+self.width/2,self.y+self.height+15)
+			return self.value<other.int_value
+	def __gt__(self,other):		
+		if type(other)==Float:
+			return self.value>other.value	
+		else:
+			return self.value>other.int_value
+	def __le__(self,other):		
+		if type(other)==Float:
+			return self.value<=other.value	
+		else:
+			return self.value<=other.int_value
+	def __ge__(self,other):
+		if type(other)==Float:
+			return self.value>=other.value	
+		else:
+			return self.value>=other.int_value
+	def __add__(self,other):
+		if type(other)==Float:
+			return self.value+other.value	
+		else:
+			return self.value+other.int_value
+	def __sub__(self,other):
+		if type(other)==Float:
+			return self.value-other.value	
+		else:
+			return self.value-other.int_value
+	def __mul__(self,other):
+		if type(other)==Float:
+			return self.value*other.value	
+		else:
+			return self.value*other.int_value
+	#ERROR HERE!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+	#TypeError: unsupported operand type(s) for /: 'Float' and 'Float'
+	#def __div__(self,other):
+	#	if type(other)==Float:
+	#		return self.value/other.value	
+	#	else:
+	#		return self.value/other.int_value
+	#ERROR HERE!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+	def __floordiv__(self,other):
+		if type(other)==Float:
+			return self.value//other.value	
+		else:
+			return self.value//other.int_value
+	def __mod__(self,other):
+		if type(other)==Float:
+			return self.value%other.value	
+		else:
+			return self.value%other.int_value
+
+
+
+class Double(Float):
+	def __init__(self,name,value,x=None,y=None,width=Variable_width,height=Variable_height):
+		Float.__init__(self,name,value,x,y,width,height)
+
+
+class Integer(Number):
+	def __init__(self,name,value,x=None,y=None,width=Variable_width,height=Variable_height):
+		Number.__init__(self,name,value,x,y,width,height)
+		self.value=self.int_value
+	def display(self):
+		pushMatrix()
+		color = COLORS["Integer"]
+		fill(color[0],color[1],color[2])
+		stroke(color[0],color[1],color[2])
+		scale(self.scale)
+		rect(self.x,self.y,self.value,self.height)
+		if self.name!="":
+			textSize(10)
+			text(self.name+"="+str(self.value),self.x,self.y+self.height+15)
+		popMatrix()
 	
-	#CONTINUE FROM HERE
-	def NOT(self):
-		pass
+"""	
+
+
+CONTINUE HERE
+
+
+
+
+CONTINUE HERE
+
+
+
+
+CONTINUE HERE
+
+
 """
-class Integer(Variable):
-	
-	def __init__(self,value=0,x=50,y=-1,height=scale_y,name="",temp=False):
-		if y==-1:
-			y=Variable.variable_count*(scale_y+25)+10
-		Variable.__init__(self,x,y,value,height,name,temp)
-		self.value = value
+
+class Char(Number):
+	char_size=30
+	def __init__(self,name,value,x=None,y=None,width=Small_Variable_width,height=Variable_height):
+		Number.__init__(self,name,ord(value),x,y,width,height)
+		self.char_value=value
+		self.value=self.int_value
+	def __repr__(self):
+		return self.name+"="+self.char_value+"("+str(self.value)+")"
 
 	def display(self):
-		stroke(0)
-		fill(0)
-		color = COLORS["INTEGER"]
-		fill(color[0],color[1],color[2])
-		if(self.value<=Variable.max_size):
-			rect(self.x,self.y,self.value,self.height)
-		else:
-			rect(self.x,self.y,Variable.max_size-80,self.height)
-			#...
-			strokeWeight(10)
-			stroke(color[0],color[1],color[2])
-			point(self.x+Variable.max_size-65,self.y+int(scale_y/2));point(self.x+Variable.max_size-50,self.y+int(scale_y/2));point(self.x+Variable.max_size-35,self.y+int(scale_y/2)); # ...
-			stroke(0);strokeWeight(1)
-			#...
-			rect(self.x+Variable.max_size-20,self.y,20,self.height)
-		
-		textSize(10)
-		if self.name!="":
-			text(str(self.name+"="+str(self.value)),self.x,self.y+self.height+15)
-		else:
-			text(str(self.value),self.x,self.y+self.height+15)
-
-		fill(0)	#This is necessary because it effects whole program
-	def __add__(a,b):
-		return a.value+b.value
-	"""
-	#NOT USED-----------------------	
-	def __add__(a,b):
-		global x
-		if type(b)==Integer:
-			if action[0] and a.move(WIDTH/2,HEIGHT/2):
-				action[0]=False;action[1]=True
-			elif action[1]:
-				x=Integer(value=b.value,x=b.x,y=b.y,name="copy b")
-				action[1]=False;action[2]=True
-			elif action[2]:
-				if a.value <= Variable.max_size:
-					if x.move(WIDTH/2+a.value,HEIGHT/2):
-						a.value+=x.value
-						x.destroy()
-						action[2]=False;action[3]=True
-				else:
-					if x.move(WIDTH/2+Variable.max_size,HEIGHT/2):
-						a.value+=x.value
-						x.destroy()
-						action[2]=False;action[3]=True
-			elif action[3] and a.move(a.X,a.Y):
-				action[3]=False;action[0]=True
-		return a
-	"""
-
-
-
-class Float(Variable):
-
-	def __init__(self,value=0.0,x=50,y=-1,height=scale_y,name="",temp=False):
-		if y==-1:
-			y=Variable.variable_count*(scale_y+25)+10
-		Variable.__init__(self,x,y,value,height,name,temp)
-		self.value = value
-		self.integer = int(value)
-		self.decimal = value%1
-
-	def display(self):
-		stroke(0)
-		fill(0)
-		color = COLORS["FLOAT"]
-		fill(color[0],color[1],color[2])
-		if(self.value<Variable.max_size):
-			rect(self.x,self.y,self.integer,self.height)	#integer
-			rect(self.x+self.integer,self.y+scale_y,10,-int(self.decimal*scale_y))	#decimal
-		else:
-			#integer
-			rect(self.x,self.y,Variable.max_size-80,self.height)
-			#...
-			strokeWeight(10)
-			stroke(color[0],color[1],color[2])
-			point(self.x+Variable.max_size-65,self.y+int(scale_y/2));point(self.x+Variable.max_size-50,self.y+int(scale_y/2));point(self.x+Variable.max_size-35,self.y+int(scale_y/2)); # ...
-			stroke(0);strokeWeight(1) 
-			#...
-			rect(self.x+Variable.max_size-20,self.y,20,self.height)
-			#decimal
-			rect(self.x+Variable.max_size,self.y+scale_y,10,-int(self.decimal*scale_y))	#decimal
-
-		textSize(10)
-		if self.name!="":
-			text(str(self.name+"="+str(self.value)),self.x,self.y+self.height+15)
-		else:
-			text(str(self.value),self.x,self.y+self.height+15)
-	
-		fill(0)	#This is necessary because it effects whole program
-	def __add__(a,b):
-		return a.value+b.value
-	"""
-	#NOT USED-----------------------
-	def __add__(c,a):
-		global x
-		if action[0]:
-			if a.value <= Variable.max_size:
-				if c.move(WIDTH/2+a.value,HEIGHT/2):
-					action[0]=False;action[1]=True
-			else:
-				if c.move(WIDTH/2+Variable.max_size,HEIGHT/2):
-					action[0]=False;action[1]=True
-		elif action[1]:
-			x=Float(value=float(a.value),x=a.x,y=a.y,name="copy a")
-			action[1]=False;action[2]=True
-		elif action[2] and x.move(WIDTH/2,HEIGHT/2):
-			c.value+=x.value
-			c.integer=int(c.value)
-			c.decimal=c.value%1
-			c.x=x.x
-			x.destroy()
-			action[2]=False;action[3]=True
-		elif action[3] and c.move(c.X,c.Y):
-			action[3]=False;action[0]=True
-		return a
-	"""
-class Char(Variable):
-	char_size = 30
-
-	def __init__(self,value="",x=50,y=-1,height=scale_y,name="",temp=False):
-		if y==-1:
-			y=Variable.variable_count*(scale_y+25)+10
-		Variable.__init__(self,x,y,Char.char_size,height,name,temp)
-		self.value = value
-	def display(self):
-		#parts
-		stroke(0)
-		fill(0)
-		noStroke()
-		textSize(12)		#SIZE SHOULD BE ABLE TO BE SELECTED
-		
+		pushMatrix()
 		color = COLORS["CHAR_BG"]
 		fill(color[0],color[1],color[2])
+		stroke(color[0],color[1],color[2])
+		scale(self.scale)
 		rect(self.x,self.y,Char.char_size,self.height)
+		
+		
 		
 		color = COLORS["CHAR"]
 		fill(color[0],color[1],color[2])
-		text(self.value,self.x+5,int(self.y+scale_y/2+5))
+		stroke(color[0],color[1],color[2])
+		textSize(12)		#SIZE SHOULD BE ABLE TO BE SELECTED
+		
+		text(str(self.value),self.x+5,int(self.y+Variable_height/2+5))
 		textSize(10)
 		if self.name!="":
-			text(self.name+"="+self.value,self.x,self.y+self.height+15)
-		stroke(0)
-
+			text(self.name+"="+str(self.value),self.x,self.y+self.height+15)
+		popMatrix()
 class Pointer(Variable):
-	pointer_size = 30
-	pointer_count = 0
-	pointer_interval = 10
-	def __init__(self,value=None,x=50,y=-1,height=scale_y,name="",temp=False):
-		if y==-1:
-			y=Variable.variable_count*(scale_y+25)+10
-		Variable.__init__(self,x,y,Pointer.pointer_size,height,name,temp)
-		self.value = value
+	"""Actually no different than an Array object but it seems like doesn't have acces to all Variables inside"""
+	pointer_count=0
+	def __init__(self,type_,name,pointed_Variable,x=None,y=None,width=Small_Variable_width,height=Variable_height):
+		Variable.__init__(self,name,x,y,width,height)
+		self.type_=type_
+		self.pointed_Variable=pointed_Variable
+		self.size=0
+		self.Variable_list=[]
 		self.arrow_color=[random.randint(0,255),random.randint(0,255),random.randint(0,255)]
-		self.arrow_distance=Pointer.pointer_count*Pointer.pointer_interval+40
-		
-		if type(self.value)==Variable or type(self.value)==Pointer or type(self.value)==None:
-			self.color = COLORS["VARIABLE"]
-		elif type(self.value)==Integer:
-			self.color = COLORS["INTEGER"]
-		elif type(self.value)==Float:
-			self.color = COLORS["FLOAT"]
-		elif type(self.value)==Char:
-			self.color = COLORS["CHAR"]
-		elif type(self.value)==List:
-			self.color = COLORS["LIST"]
-		
-		Pointer.pointer_count+=1
-	
+
 	def display(self):
-		stroke(0)
-		fill(0)
-		strokeWeight(4)
-		#BG
+		pushMatrix()
+		scale(self.scale)
 		color = COLORS["POINTER_BG"]
 		fill(color[0],color[1],color[2])
+		stroke(color[0],color[1],color[2])
 		rect(self.x,self.y,self.width,self.height)
-
 		
-		#COLOR
-		stroke(self.color[0],self.color[1],self.color[2])
-
+		
+		
+		color = COLORS["POINTER"]
+		fill(color[0],color[1],color[2])
+		stroke(color[0],color[1],color[2])
 		#STAR
 		line(self.x,self.y,self.x+self.width,self.y+self.height)					#LEFT-UP TO RIGHT-BOT
 		line(self.x+self.width/2,self.y,self.x+self.width/2,self.y+self.height)		#TOP to BOT
@@ -378,63 +320,44 @@ class Pointer(Variable):
 		line(self.x,self.y+self.height/2,self.x+self.width,self.y+self.height/2)	#LEFT to RIGHT
 		
 		#HOW TO POINT
-		color = self.arrow_color
-		stroke(color[0],color[1],color[2])
 		if type(self.value)!=None:
-			line(self.x-5,self.y+self.height/3,self.X-self.arrow_distance,self.y+self.height/3)														#POINTER
-			line(self.X-self.arrow_distance,self.y+self.height/3,self.X-self.arrow_distance,self.value.y+2*self.value.height/3)				#MAIN
-			line(self.X-self.arrow_distance,self.value.y+2*self.value.height/3,self.value.X-20,self.value.y+2*self.value.height/3)	#POINTED
-			line(self.value.X-20,self.value.y+2*self.value.height/3,self.value.X-25,self.value.y+2*self.value.height/3-5)			#ARROW UPSIDE
-			line(self.value.X-20,self.value.y+2*self.value.height/3,self.value.X-25,self.value.y+2*self.value.height/3+5)			#ARROW UPSIDE
-		"""
-		#I was trying to make it look outside but then I noticed if it doesn't point to something, then no arrow required
-		else:
-			line(self.x-5,self.y+self.height/3,self.X-(Pointer.pointer_count*Pointer.pointer_interval+20),self.y+self.height/3)						#POINTER
-			line(self.X-(Pointer.pointer_count*Pointer.pointer_interval+20),self.y+self.height/3,self.X-(Pointer.pointer_count*Pointer.pointer_interval+20)+5,self.y+self.height/3-5)												#ARROW UPSIDE
-			line(self.X-(Pointer.pointer_count*Pointer.pointer_interval+20),self.y+self.height/3,self.X-(Pointer.pointer_count*Pointer.pointer_interval+20)+4,self.y+self.height/3+5)												#ARROW UPSIDE
-		"""
-		textSize(10)
-		fill(self.color[0],self.color[1],self.color[2])
-		if self.name!="":
-			text(self.name+"="+self.value.name,self.x,self.y+self.height+15)
-		stroke(0)
-		strokeWeight(0)
-class List(Variable):
-
-	def __init__(self,value=[],x=50,y=-1,height=0,name="",temp=False):
-		if y==-1:
-			y=(Variable.variable_count-len(value))*(scale_y+25)+5
-		Variable.__init__(self,x-5,y,Variable.max_size,len(value)*(scale_y+25),name,temp)
-		Variable.variable_block_height-=self.height-25
-		self.value = value
-	def display(self):
-		#border
-		stroke(0)
-		fill(0)
-		color = COLORS["LIST_BORDER"]
-		stroke(color[0],color[1],color[2])
-		fill(color[0],color[1],color[2])
-		strokeWeight(3)
-		line(self.x,self.y,self.x+30,self.y)							#top
-		line(self.x,self.y,self.x,self.y+self.height)					#left
-		line(self.x,self.y+self.height,self.x+30,self.y+self.height)	#bottom
-		current=0
-		for i in self.value:
-			line(self.x,self.y+current,self.x+30,self.y+current)
-			current+=scale_y+25
-
+			color=self.arrow_color
+			fill(color[0],color[1],color[2])
+			stroke(color[0],color[1],color[2])
+			line(self.x-5,self.y+self.height/3,self.pointed_Variable.x+self.pointed_Variable.width/2,self.pointed_Variable.y+self.pointed_Variable.height/2) #pointer side
 
 		textSize(10)
-		string="["
-		for i in self.value:
-			string+=str(i.value)
-			string+=","
-		string+="]"
 		if self.name!="":
-			text(str(self.name+"="+string),self.x,self.y+self.height+15)
+			text(self.name+"="+self.pointed_Variable.name,self.x,self.y+self.height+15)
+		
+		popMatrix()
+	def __getitem__(self,key):
+		return self.Variable_list[key]
+	def __setitem__(self,key,value):
+		self.Variable_list[key]=value
+
+class Array(Pointer):
+
+	def __init__(self,type_,name,Variables=[],x=None,y=None,width=Variable_width,height=Variable_height):
+		size=len(Variables)
+		if size == 0:
+			Pointer.__init__(self,type_,name,None,x,y,width,height,)
 		else:
-			text(str(string),self.x,self.y+self.height+15)
+			Pointer.__init__(self,type_,name,Variables[0],x,y,width,height)
+		self.size=size
+		self.Variable_list=Variables
 
-
-		stroke(0)
-
+class Boolean(Variable):
+	"""Probably will look like a lever"""
+	def __init__(self,name,value,x=None,y=None,width=Small_Variable_width,height=Variable_height): #Boolean size should be smaller than other variables
+		#Placing factor depends on namespace and bool won't be used for start
+		Variable.__init__(self,name,x,y,width,height)
+		self.value=value
+	def inverse(self):
+		return not self.value
+	def invert(self):
+		self.value=not self.value
+	def __and__(self,other):
+		return self.value and other.value
+	def __or__(self,other):
+		return self.value or other.value
