@@ -1,6 +1,6 @@
 This is an uncomplete project. 
 Basically for first step it should visualize any C code. 
-Then it should be practical to developing program without using any code by only using this program.
+Then it should become a tool for developing software without requiring any actual coding.
 The step after that is more focused about style optimization, and creating community.
 
 deneme.py will start to program
