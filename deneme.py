@@ -9,7 +9,7 @@ SCALE = 1
 
 
 #FLOW CONTROLLERS----------------------
-FLOW = False
+FLOW = True
 line=[True,False,False,False,False,False,False,False,False,False,False,False,False,False]
 action=[True,False,False,False]
 
