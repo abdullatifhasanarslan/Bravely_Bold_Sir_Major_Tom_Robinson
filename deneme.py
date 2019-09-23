@@ -78,7 +78,7 @@ def draw():
 				Variables.Integer(value=60,name="q"),
 				Variables.Integer(value=70,name="h"),
 				Variables.Integer(value=80,name="j"),
-				Variables.Integer(value=90,name="k")],name="hayri")
+				Variables.Integer(value=90,name="k")],name="Ali")
 			pointers=Variables.List(value=[Variables.Pointer(value=h.value[0],name="z"),
 				Variables.Pointer(value=h.value[4],name="x"),
 				Variables.Pointer(value=h.value[2],name="y"),
