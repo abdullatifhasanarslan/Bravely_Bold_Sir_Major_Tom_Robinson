@@ -5,7 +5,7 @@ The step after that is more focused about style optimization, and creating commu
 
 deneme.py will start to program
 
-To open it pyprocessing should be installed.
+For application to wo pyprocessing should be installed.
 pyprocessing library:
   https://github.com/esperanc/pyprocessing
   
